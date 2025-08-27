@@ -1,0 +1,23 @@
+{
+    "@context": {
+        "fiware": "https://uri.fiware.org/ns/dataModels#",
+        "NominalPower": "https://smartdatamodels.org/dataModel.GreenEnergy/NominalPower",
+        "activePower": "https://smartdatamodels.org/dataModel.GreenEnergy/activePower",
+        "MaximumSystemVoltage": "https://smartdatamodels.org/dataModel.GreenEnergy/MaximumSystemVoltage",
+        "temperature": "https://smartdatamodels.org/dataModel.GreenEnergy/temperature",
+        "energyConsumed": "https://voc.iudx.org.in/energyConsumed",
+        "owner": "https://smartdatamodels.org/dataModel.GreenEnergy/owner",
+        "surfaceTilt": "https://brickschema.org/ontology/1.2/entity_properties/tilt",
+        "surfaceAzimuth": "https://brickschema.org/ontology/1.2/entity_properties/azimuth",
+        "capacity": "https://en.wikipedia.org/wiki/Volume#Related_terms",
+        "thermalLoss": "https://www.thermal-engineering.org/what-is-heat-loss-definition/",
+        "targetTemperature": "https://brickschema.org/ontology/1.2/classes/Water_Temperature_Setpoint",
+        "maxTemperatureDifference": "https://schema.org/maxValue",
+        "Person": "fiware:Person",
+        "Building": "fiware:Building",
+        "PhotovoltaicMeasurement": "https://github.com/smart-data-models/dataModel.GreenEnergy/tree/master/PhotovoltaicMeasurement",
+        "PhotovoltaicDevice": "https://github.com/smart-data-models/dataModel.GreenEnergy/tree/master/PhotovoltaicDevice",
+        "EnergyMeter": "https://voc.iudx.org.in/EnergyMeter",
+        "WarmWaterTank": "https://brickschema.org/ontology/1.2/classes/Electric_Boiler/"
+    }
+}

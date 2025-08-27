@@ -1,0 +1,136 @@
+services:
+    orion:
+        image: fiware/orion-ld
+        hostname: orion
+        container_name: fiware-orion
+        depends_on:
+            - mongo-db
+        networks:
+            - default
+        ports:
+            - "1026:1026"
+        command: -dbhost mongo-db -logLevel DEBUG -forwarding
+        healthcheck:
+            test: curl --fail -s http://orion:1026/version || exit 1
+
+    mongo-db:
+        image: mongo:4.2
+        hostname: mongo-db
+        container_name: db-mongo
+        expose:
+            - "27017"
+        ports:
+            - "27017:27017"
+        networks:
+            - default
+        command: --nojournal
+
+    ld-context:
+        image: httpd:alpine
+        hostname: context
+        container_name: fiware-ld-context
+        ports:
+            - "3004:80"
+        volumes:
+            - data-models:/usr/local/apache2/htdocs/
+
+    optimizer:
+        build: 
+            context: ./docker-python
+            dockerfile: ./Dockerfile
+        hostname: opti
+        container_name: optimizer
+        ports:
+            - "57821:57821"
+
+    crate-db:
+        image: crate:4.8.1
+        hostname: crate-db
+        container_name: crate-db
+        ports:
+            - "4200:4200"
+            - "4300:4300"
+        command: crate -Cauth.host_based.enabled=false  -Ccluster.name=democluster -Chttp.cors.enabled=true -Chttp.cors.allow-origin="*"
+        environment:
+            - CRATE_HEAP_SIZE=2g
+        volumes:
+            - crate-db:/data
+
+    quantumleap:
+        image: orchestracities/quantumleap
+        hostname: quantumleap
+        container_name: quantumleap
+        ports:
+            - "8668:8668"
+        depends_on:
+            - crate-db
+        environment:
+            - CRATE_HOST=crate-db
+
+    grafana:
+        container_name: grafana
+        image: grafana/grafana
+        depends_on:
+            - crate-db
+        ports:
+            - "3003:3000"
+
+    iot-agent:
+        image: quay.io/fiware/iotagent-json:2.3.0-distroless
+        hostname: iot-agent
+        container_name: fiware-iot-agent
+        depends_on:
+            - mongo-db
+        networks:
+            - default
+        expose:
+            - "4041"
+            - "7896"
+        ports:
+            - "4041:4041"
+            - "7896:7896"
+        environment:
+            - IOTA_CB_HOST=orion
+            - IOTA_CB_PORT=1026
+            - IOTA_NORTH_PORT=4041
+            - IOTA_REGISTRY_TYPE=mongodb
+            - IOTA_LOG_LEVEL=DEBUG
+            - IOTA_TIMESTAMP=true
+            - IOTA_CB_NGSI_VERSION=ld
+            - IOTA_AUTOCAST=true
+            - IOTA_MONGO_HOST=mongo-db
+            - IOTA_MONGO_PORT=27017
+            - IOTA_MONGO_DB=iotagentjson
+            - IOTA_HTTP_PORT=7896
+            - IOTA_PROVIDER_URL=http://iot-agent:4041
+            - IOTA_DEFAULT_RESOURCE=/iot/json
+            - IOTA_JSON_LD_CONTEXT=http://context/ngsi-context.jsonld
+            - IOTA_FALLBACK_TENANT=openiot
+            - IOTA_MQTT_HOST=mosquitto
+            - IOTA_MQTT_PORT=1883
+
+    mosquitto:
+        image: eclipse-mosquitto
+        hostname: mosquitto
+        container_name: mosquitto
+        networks:
+            - default
+        expose:
+            - "1883"
+            - "9001"
+        ports:
+            - "1883:1883"
+            - "9001:9001"
+        volumes:
+            - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+volumes:
+    crate-db: ~
+    mongo-db: ~
+    grafana: ~
+    data-models:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device: ${PWD}/data-models
